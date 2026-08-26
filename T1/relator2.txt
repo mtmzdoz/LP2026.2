@@ -1,0 +1,14 @@
+[ALINEACION] El equipo Chile sale a la cancha con: Bravo, Medel y Sanchez
+[ALINEACION] El equipo Brasil sale a la cancha con: Alisson, Silva y Neymar
+[0’] Arranca el partido saca Sanchez
+[5’] Sanchez toca corto para Medel
+[10’] Neymar recupera el balon limpiamente
+[15’] Neymar remata al arco
+[12’] Silva domina en el fondo
+[20’] Vidal remata de media distancia
+[25’] Medel derriba fuertemente a Neymar
+[TARJETA AMARILLA] El arbitro no duda y es amarilla para Medel
+[CAMBIO] se retira Bravo y hace su ingreso Arias
+[30’] Neymar pase profundo para Silva
+[40’] ¡Goolazo de Silva para Brasil!
+[MINUTOS EXTRA] +3’
