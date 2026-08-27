@@ -1,0 +1,6 @@
+[ALINEACION] El equipo Chile sale a la cancha con: Bravo, Medel y Vargas
+[ALINEACION] El equipo Brasil sale a la cancha con: Alisson, Silva y Neymar
+[0’] Arranca el partido saca Vargas
+[5’] Pase filtrado de Vargas para Medel
+[CAMBIO] Sale Bravo y entra Arias
+[15’] Tira potentemente Neymar

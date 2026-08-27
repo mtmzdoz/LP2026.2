@@ -2,8 +2,7 @@ import re
 import time  #BORRAR
 
 #yo
-signos = r'[¡!,\.\'’\-]'
-
+signos = r'[¡!,\.\'’\-\?¿"“”]'
 
 # == Base 
 digito = r'[0-9]'
@@ -107,11 +106,7 @@ def analizarRelato(equipoJugadores, relato):
             jugadorSaqueInicial = matchInicio.group(1)
             
             # Buscamos a qué equipo pertenece ese jugador en nuestro diccionario
-            equipoPerteneciente = None
-            for equipo, listaJugadores in equipoJugadores.items():
-                if jugadorSaqueInicial in listaJugadores:
-                    equipoPerteneciente = equipo
-                    break # Lo encontramos, dejamos de buscar
+            equipoPerteneciente = obtener_equipo(jugadorSaqueInicial, equipoJugadores)
             
             # VALIDACIÓN: Jugador Fantasma
             if equipoPerteneciente is None:
@@ -124,6 +119,8 @@ def analizarRelato(equipoJugadores, relato):
             jugadorConPelota = jugadorSaqueInicial
             continue # Pasamos a leer la siguiente línea del relato
 
+
+        # --- 2. ¿ES UN PASE? ---
         matchPase = re.match(rf"^{evento_pase}$", linea)
         
         if matchPase:
@@ -144,12 +141,8 @@ def analizarRelato(equipoJugadores, relato):
             # C. Validación: ¿Existen los jugadores? (Revisamos ambos)
             jugadores_validos = True
             for jugador_evaluar in [jugador_origen, jugador_destino]:
-                encontrado = False
-                for listaJugadores in equipoJugadores.values():
-                    if jugador_evaluar in listaJugadores:
-                        encontrado = True
-                        break
-                if not encontrado:
+                equipoPerteneciente = obtener_equipo(jugador_evaluar, equipoJugadores)
+                if not equipoPerteneciente:
                     inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_evaluar}' no pertenece a ninguna alineación ni ha ingresado.\n")
                     jugadores_validos = False
                     break # Salimos del ciclo de validación
@@ -177,13 +170,9 @@ def analizarRelato(equipoJugadores, relato):
                 continue
                 
             # B. Validación: ¿El jugador existe?
-            encontrado = False
-            for listaJugadores in equipoJugadores.values():
-                if jugador_robo in listaJugadores:
-                    encontrado = True
-                    break
+            equipoPerteneciente = obtener_equipo(jugador_robo, equipoJugadores)
                     
-            if not encontrado:
+            if not equipoPerteneciente:
                 inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_robo}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
@@ -196,24 +185,39 @@ def analizarRelato(equipoJugadores, relato):
         matchCambio = re.match(rf"^{evento_cambio}$", linea)
         
         if matchCambio:
-            jugador_sale = matchCambio.group(1)
-            jugador_entra = matchCambio.group(2)
-            
-            # Buscamos de qué equipo es el que sale
+            jugador_sale = None
             equipo_cambio = None
-            for equipo, listaJugadores in equipoJugadores.items():
-                if jugador_sale in listaJugadores:
-                    equipo_cambio = equipo
-                    break
             
-            # Si el que sale no existe, es un error
-            if equipo_cambio is None:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_sale}' no puede salir porque no está en la cancha.\n")
+            # 1. TU IDEA: Usamos a los jugadores en cancha para buscar quién sale
+            for equipo in equipoJugadores:
+                for j_cancha in equipoJugadores[equipo]:
+                    # Verificamos si el nombre del jugador está escrito en la línea
+                    if j_cancha in linea:
+                        jugador_sale = j_cancha
+                        equipo_cambio = equipo
+                        break
+                if jugador_sale:
+                    break # Si ya lo encontramos, dejamos de buscar
+                    
+            # Si revisamos a todos los de la cancha y ninguno estaba en la línea:
+            if jugador_sale is None:
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: No se detectó a ningún jugador en cancha para salir.\n")
                 continue
                 
-            # Si todo está bien, hacemos la sustitución en tu diccionario
-            equipoJugadores[equipo_cambio].remove(jugador_sale)
-            equipoJugadores[equipo_cambio].append(jugador_entra)
+            # 2. Cortamos la línea justo después del jugador que sale
+            # Ej: "[CAMBIO] Sale Bravo y entra Arias" se parte y nos quedamos con " y entra Arias"
+            parte_final_linea = linea.split(jugador_sale)[1]
+            
+            # 3. El que ENTRA es la primera palabra con mayúscula en esa parte final
+            match_entra = re.search(rf"{jugador}", parte_final_linea)
+            
+            if match_entra:
+                jugador_entra = match_entra.group(1)
+                
+                # 4. Hacemos el cambio en el diccionario
+                equipoJugadores[equipo_cambio].remove(jugador_sale)
+                equipoJugadores[equipo_cambio].append(jugador_entra)
+                
             continue
 
         # --- 5. ¿ES UNA TARJETA? ---
@@ -227,26 +231,31 @@ def analizarRelato(equipoJugadores, relato):
             
             # 2. Revisamos cuál de esas palabras existe en nuestras listas
             for palabra in posibles_jugadores:
-                encontrado = False
-                for equipo in equipoJugadores:
-                    if palabra in equipoJugadores[equipo]:
+                equipoPerteneciente = obtener_equipo(palabra, equipoJugadores)
+                if equipoPerteneciente is not None:
                         jugador_tarjeta = palabra
-                        equipo_del_amonestado = equipo # Guardamos el equipo
-                        encontrado = True
+                        equipo_del_amonestado = equipoPerteneciente # Guardamos el equipo
                         break
-                if encontrado:
+                if equipoPerteneciente:
                     break
             
             # 3. Si revisamos todas y ninguna era un jugador:
             if jugador_tarjeta is None:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: No se encontró ningún jugador válido en la línea.\n")
+                # Siguiendo el consejo del profesor: tomamos la última mayúscula capturada
+                # como el supuesto jugador fantasma.
+                if len(posibles_jugadores) > 0:
+                    supuesto_fantasma = posibles_jugadores[-1]
+                else:
+                    supuesto_fantasma = "Desconocido"
+                    
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{supuesto_fantasma}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
             # 4. Si encontramos al jugador real, le damos su tarjeta
             if "TARJETA AMARILLA" in linea:
-                tarjetas_amarillas.append(jugador_tarjeta)
+                tarjetas_amarillas.append((jugador_tarjeta, equipo_del_amonestado))
             elif "TARJETA ROJA" in linea:
-                tarjetas_rojas.append(jugador_tarjeta)
+                tarjetas_rojas.append((jugador_tarjeta, equipo_del_amonestado))
                 # ¡NUEVO: LO EXPULSAMOS DE LA CANCHA!
                 equipoJugadores[equipo_del_amonestado].remove(jugador_tarjeta)
                 
@@ -263,13 +272,9 @@ def analizarRelato(equipoJugadores, relato):
                 continue
                 
             # B. Validación: ¿El jugador existe?
-            encontrado = False
-            for listaJugadores in equipoJugadores.values():
-                if jugador_tiro in listaJugadores:
-                    encontrado = True
-                    break
+            equipoPerteneciente = obtener_equipo(jugador_tiro, equipoJugadores)
             
-            if not encontrado:
+            if not equipoPerteneciente:
                 inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_tiro}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
@@ -291,17 +296,11 @@ def analizarRelato(equipoJugadores, relato):
             
             # B. Validación: ¿Existen los jugadores?
             jugadores_validos = True
-            equipo_del_infractor = None 
+            equipo_del_infractor = obtener_equipo(jugador_infractor, equipoJugadores)
             
             for jugador_evaluar in [jugador_infractor, jugador_victima]:
-                encontrado = False
-                for equipo, listaJugadores in equipoJugadores.items():
-                    if jugador_evaluar in listaJugadores:
-                        encontrado = True
-                        if jugador_evaluar == jugador_infractor:
-                            equipo_del_infractor = equipo
-                        break
-                if not encontrado:
+                equipoPerteneciente = obtener_equipo(jugador_evaluar, equipoJugadores)
+                if equipoPerteneciente is None:
                     inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_evaluar}' no pertenece a ninguna alineación ni ha ingresado.\n")
                     jugadores_validos = False
                     break
@@ -331,13 +330,9 @@ def analizarRelato(equipoJugadores, relato):
                 continue
                 
             # B. Validación: ¿El jugador existe?
-            encontrado = False
-            for listaJugadores in equipoJugadores.values():
-                if jugador_gol in listaJugadores:
-                    encontrado = True
-                    break
+            equipoPerteneciente = obtener_equipo(jugador_gol, equipoJugadores)
             
-            if not encontrado:
+            if not equipoPerteneciente:
                 inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador_gol}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
             
@@ -374,24 +369,26 @@ def analizarRelato(equipoJugadores, relato):
 
 def tiempoPosesion(jugadorConPelota, equipoJugadores, min_actual, ultimoMinuto, tiempoPosesionPelota):
     """Suma los minutos transcurridos al equipo que tiene la pelota."""
-    if jugadorConPelota is not None:
-        equipo_del_poseedor = None
-        
+    equipo_del_poseedor = obtener_equipo(jugadorConPelota, equipoJugadores)
         # Buscamos a qué equipo pertenece (usando el for clásico que te gustó)
-        for equipo in equipoJugadores:
-            if jugadorConPelota in equipoJugadores[equipo]:
-                equipo_del_poseedor = equipo
-                break
         
-        if equipo_del_poseedor is not None:
-            minutos_pasados = min_actual - ultimoMinuto
-            tiempoPosesionPelota[equipo_del_poseedor] += minutos_pasados
+    if equipo_del_poseedor is not None:
+        minutos_pasados = min_actual - ultimoMinuto
+        tiempoPosesionPelota[equipo_del_poseedor] += minutos_pasados
+
+def obtener_equipo(nombre_jugador, equipoJugadores):
+    """Busca a un jugador en el diccionario y retorna el nombre de su equipo. Si no existe, retorna None."""
+    for equipo in equipoJugadores:
+        if nombre_jugador in equipoJugadores[equipo]:
+            return equipo
+    return None
+
 # --- EJEMPLO DE USO COMPLETO ---
 if __name__ == "__main__":
     
     tiempo_inicio = time.time()
     
-    equipoJugadores, relato = leerArchivo("relator3.txt")
+    equipoJugadores, relato = leerArchivo("relator5.txt")
     errores, marcador, faltas, t_amarillas, t_rojas, posesion = analizarRelato(equipoJugadores, relato)
     
     tiempo_fin = time.time()
@@ -438,23 +435,13 @@ if __name__ == "__main__":
     if len(t_amarillas) == 0 and len(t_rojas) == 0:
         print("* Ninguna tarjeta registrada.")
     else:
-        # Función auxiliar súper tradicional
-        def buscar_equipo_jugador(nombre_jugador):
-            for equipo in equipoJugadores:
-                jugadores_del_equipo = equipoJugadores[equipo]
-                if nombre_jugador in jugadores_del_equipo:
-                    return equipo
-            return "Desconocido"
-
         # Imprimimos las amarillas
-        for jugador in t_amarillas:
-            equipo_jugador = buscar_equipo_jugador(jugador)
-            print(f"* {jugador} ({equipo_jugador}): 1 Amarilla")
+        for jugador_nombre, equipo_jugador in t_amarillas:
+            print(f"* {jugador_nombre} ({equipo_jugador}): 1 Amarilla")
             
         # Imprimimos las rojas
-        for jugador in t_rojas:
-            equipo_jugador = buscar_equipo_jugador(jugador)
-            print(f"* {jugador} ({equipo_jugador}): 1 Roja")
+        for jugador_nombre, equipo_jugador in t_rojas:
+            print(f"* {jugador_nombre} ({equipo_jugador}): 1 Roja")
 
             
     # --- 4. ERRORES ---

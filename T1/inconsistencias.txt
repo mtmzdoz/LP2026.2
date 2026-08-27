@@ -1,4 +1,4 @@
 ERROR: Jugador Desconocido.
-Línea: '[25’] Fernandez dispara violentamente al arco'
-Motivo: 'Fernandez' no pertenece a ninguna alineación ni ha ingresado.
+Línea: '[30’] DePaul recupera el balon mágicamente'
+Motivo: 'DePaul' no pertenece a ninguna alineación ni ha ingresado.
 

@@ -1,0 +1,10 @@
+[ALINEACION] El equipo Argentina sale a la cancha con: Messi, DePaul y Fernandez
+[ALINEACION] El equipo España sale a la cancha con: Ferran, Cubarsi y Lamine
+[0’] Arranca el partido... saca Messi
+[5’] Messi toca "magistralmente" para DePaul
+[TARJETA AMARILLA] Primera amarilla para DePaul
+[TARJETA AMARILLA] Segunda amarilla para DePaul
+[TARJETA AMARILLA] ¡Tercera amarilla para DePaul!
+[TARJETA ROJA] Ya era hora, ¡roja para DePaul!
+[30’] DePaul recupera el balon mágicamente
+[90’] Messi dispara al arco
