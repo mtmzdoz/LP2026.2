@@ -1,12 +1,4 @@
 ERROR: Jugador Desconocido.
-Línea: '[30’] Kim recupera el balón en el mediocampo'
-Motivo: 'Kim' no pertenece a ninguna alineación ni ha ingresado.
-
-ERROR: Salto Temporal.
-Línea: '[15’] Mpenza dispara al arco'
-Motivo: El minuto 15' es inferior al último registrado (25').
-
-ERROR: Jugador Desconocido.
-Línea: '[TARJETA AMARILLA] ¡Qué Terrible embestida por detrás! AMARILLA para Ronaldo'
-Motivo: 'Ronaldo' no pertenece a ninguna alineación ni ha ingresado.
+Línea: '[30’] DePaul recupera el balon mágicamente'
+Motivo: 'DePaul' no pertenece a ninguna alineación ni ha ingresado.
 

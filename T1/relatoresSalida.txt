@@ -1,0 +1,173 @@
+Relator2
+¿Qué trampas evalúa este caso?
+    Salto Temporal: En el relato pasamos del minuto 15' (remate de Neymar) al minuto 12' (dominio de Silva).
+    Jugador Fantasma (Nunca ingresó): En el minuto 20', "Vidal" remata de media distancia, pero si miras la alineación y los cambios, él nunca entró a la cancha.
+    Regla de Posesión por Falta: En el 25' Medel le hace falta a Neymar. Neymar (Brasil) debe quedarse con el balón desde ese minuto.
+    Regla de Posesión por Gol: En el 40' hay gol de Brasil. Automáticamente, el balón debe pasar a un jugador de Chile (el primer jugador de su lista).
+    Cambio limpio: "Bravo" sale, "Arias" entra. Se usa el EBNF básico.
+
+Resultados Esperados (Consola):
+=== REPORTE DEL PARTIDO ===
+MARCADOR FINAL: Chile 0 - 1 Brasil
+ESTADISTICAS DE POSESION:
+- Chile: 67.7% (63 minutos)
+- Brasil: 32.3% (30 minutos)
+*(Cálculo basado en un total de 93 minutos)*
+
+ESTADISTICAS DISCIPLINARIAS:
+- Faltas cometidas:
+* Chile: 1
+* Brasil: 0
+- Tarjetas:
+* Medel (Chile): 1 Amarilla
+
+ERRORES DE TRANSMISION DETECTADOS: 2
+
+JUGADORES QUE TERMINARON EN LA CANCHA:
+* Chile: Medel, Sanchez, Arias
+* Brasil: Alisson, Silva, Neymar
+Resultados Esperados (inconsistencias.txt):
+    Error de Salto Temporal en la línea del 12' ([12’] Silva domina en el fondo).
+    Error de Jugador Desconocido en la línea del 20' ([20’] Vidal remata...), porque Vidal es un fantasma.
+
+========================================================================================
+Relator3
+¿Qué trampas evalúa este caso?
+
+    Roja y Expulsión Inmediata: Fernandez recibe una Tarjeta Roja directa. Tu programa debe eliminarlo físicamente de la lista de equipoJugadores["Argentina"].
+    El "Fantasma post-expulsión": En el minuto 25', el texto dice que "Fernandez dispara violentamente al arco". Como tu programa lo echó de la cancha un par de líneas más arriba, ahora debe detectarlo como fantasma.
+
+Resultados Esperados (Consola):
+=== REPORTE DEL PARTIDO ===
+MARCADOR FINAL: Argentina 0 - 0 España
+ESTADISTICAS DE POSESION:
+- Argentina: 100.0% (90 minutos)
+- España: 0.0% (0 minutos)
+*(Cálculo basado en un total de 90 minutos)*
+
+ESTADISTICAS DISCIPLINARIAS:
+- Faltas cometidas:
+* Argentina: 0
+* España: 0
+- Tarjetas:
+* Fernandez (Argentina): 1 Roja
+
+ERRORES DE TRANSMISION DETECTADOS: 1
+
+JUGADORES QUE TERMINARON EN LA CANCHA:
+* Argentina: Messi, DePaul
+* España: Ferran, Cubarsi, Lamine
+
+Resultados Esperados (inconsistencias.txt):
+
+    Error de Jugador Desconocido en la línea del 25' ([25’] Fernandez dispara...).
+    (Nota: Aunque Fernandez fue titular, ya no está en la cancha, por lo que la función validarJugadoresFantasma lo atrapará sin piedad).
+
+========================================================================================
+Relator4
+¿Qué trampas evaluaba este caso?
+    Basura post-cambio: El texto  por una lesión terrible en la rodilla!!! aparece inmediatamente después de "Arias".
+    Uso del nuevo jugador: Arias interactúa en el 10'. Si el código fallaba al extraer su nombre limpio, daría error de fantasma.
+    Validación del jugador saliente: Bravo intenta jugar en el 15'. Como ya salió, debe ser catalogado como fantasma.
+
+Resultados Esperados (Consola):
+=== REPORTE DEL PARTIDO ===
+MARCADOR FINAL: Chile 0 - 0 Brasil
+ESTADISTICAS DE POSESION:
+- Chile: 100.0% (90 minutos)
+- Brasil: 0.0% (0 minutos)
+*(Cálculo basado en un total de 90 minutos)*
+
+ESTADISTICAS DISCIPLINARIAS:
+- Faltas cometidas:
+* Chile: 0
+* Brasil: 0
+- Tarjetas:
+* Ninguna tarjeta registrada.
+
+ERRORES DE TRANSMISION DETECTADOS: 1
+
+JUGADORES QUE TERMINARON EN LA CANCHA:
+* Chile: Medel, Vargas, Arias
+* Brasil: Alisson, Silva, Neymar
+
+Resultados Esperados (inconsistencias.txt):
+    Error por Jugador Desconocido en el 15' (Línea: '[15’] Bravo recupera el balon').
+
+========================================================================================
+Relator5
+¿Qué trampas evalúa este caso?
+    Acumulación de Tarjetas (Sin regla de doble amarilla): DePaul recibe 3 tarjetas amarillas seguidas. Como el profesor no pidió implementar que "2 amarillas = 1 roja automática", tu programa simplemente debe sumar las 3 amarillas a su estadística.
+    Uso de comillas en el relato: La frase "magistralmente" en el minuto 5' prueba si tu variable {frase_variable} acepta comillas dobles sin romperse (que sí lo hace gracias a tu regex signos = r'[¡!,\.\'’\-\?¿"“”]').
+    Fantasma Mágico: DePaul recibe roja. Luego, en el 30', mágicamente "recupera el balon". Tu programa debe bloquear esta acción.
+
+Resultados Esperados (Consola):
+    === REPORTE DEL PARTIDO ===
+MARCADOR FINAL: Argentina 0 - 0 España
+ESTADISTICAS DE POSESION:
+- Argentina: 100.0% (90 minutos)
+- España: 0.0% (0 minutos)
+*(Cálculo basado en un total de 90 minutos)*
+
+ESTADISTICAS DISCIPLINARIAS:
+- Faltas cometidas:
+* Argentina: 0
+* España: 0
+- Tarjetas:
+* DePaul (Argentina): 1 Amarilla
+* DePaul (Argentina): 1 Amarilla
+* DePaul (Argentina): 1 Amarilla
+* DePaul (Argentina): 1 Roja
+
+ERRORES DE TRANSMISION DETECTADOS: 1
+
+JUGADORES QUE TERMINARON EN LA CANCHA:
+* Argentina: Messi, Fernandez
+* España: Ferran, Cubarsi, Lamine
+
+Resultados Esperados (inconsistencias.txt):
+    Error de Jugador Desconocido en la línea del 30' ([30’] DePaul recupera...), debido a que ya había sido expulsado.
+========================================================================================
+Relatorfin
+¿Qué trampas evaluaba este caso?
+
+    Países CamelCase: CoreaDelSur (no "Corea del Sur").
+    Ruido con signos: Uso excesivo de ..., " ", ¡¡¡ y !!!.
+    Cambio de posesión indirecto: Un gol de Wissa y una falta sobre Bolasie que deben cambiar el dueño del balón automáticamente.
+    Tiro al arco: El remate de Son (25') no debe cambiar la posesión.
+    Expulsión y Fantasma: Kim recibe roja, es borrado de la lista, y cuando intenta tocar el balón en el 30', el sistema debe gritar "¡Fantasma!".
+    Salto Temporal: El minuto 15' aparece después del 30'.
+    Tarjeta a un Fantasma: Se le saca amarilla a "Ronaldo" (que no existe) en una frase llena de mayúsculas trampa ("Terrible", "AMARILLA").
+
+Resultados Esperados (Consola):
+=== REPORTE DEL PARTIDO ===
+MARCADOR FINAL: CoreaDelSur 0 - 1 RepublicaDelCongo
+ESTADISTICAS DE POSESION:
+- CoreaDelSur: 89.2% (83 minutos)
+- RepublicaDelCongo: 10.8% (10 minutos)
+*(Cálculo basado en un total de 93 minutos)*
+
+ESTADISTICAS DISCIPLINARIAS:
+- Faltas cometidas:
+* CoreaDelSur: 1
+* RepublicaDelCongo: 0
+- Tarjetas:
+* Kim (CoreaDelSur): 1 Amarilla
+* Kim (CoreaDelSur): 1 Amarilla
+* Kim (CoreaDelSur): 1 Amarilla
+* Kim (CoreaDelSur): 1 Roja
+
+ERRORES DE TRANSMISION DETECTADOS: 3
+
+JUGADORES QUE TERMINARON EN LA CANCHA:
+* CoreaDelSur: Son, Lee
+* RepublicaDelCongo: Mpenza, Bakambu, Wissa
+
+Resultados Esperados (inconsistencias.txt):
+    Error por Jugador Desconocido en el 30' (Kim expulsado).
+    Error por Salto Temporal en el 15'.
+    Error por Jugador Desconocido en la tarjeta de Ronaldo. (Ojo: Con tu última mejora, dirá el mensaje genérico: "El jugador mencionado no pertenece a ninguna alineación...").
+
+
+
+
