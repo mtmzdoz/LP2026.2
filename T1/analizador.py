@@ -288,7 +288,7 @@ def analizarRelato(equipoJugadores, relato):
             jugadorInfractor = matchFalta.group(2)
             jugadorVictima = matchFalta.group(3)
 
-            # A. Validación: Salto Temporal
+            # A. Validación: Salto Temporal BORRAR
             tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
             if not tiempoValido:
                 continue
@@ -460,7 +460,7 @@ def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas
 
 tiempo_inicio = time.time() #BORRAR
     
-equipoJugadores, relato = leerArchivo("relator5.txt")
+equipoJugadores, relato = leerArchivo("relator3.txt")
 errores, marcador, faltas, tarjetasAmarillas, tarjetasRojas, posesion = analizarRelato(equipoJugadores, relato)
 imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas, errores, equipoJugadores)
 tiempo_fin = time.time() #Borrar

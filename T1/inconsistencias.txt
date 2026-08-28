@@ -1,4 +1,4 @@
 ERROR: Jugador Desconocido.
-Línea: '[30’] DePaul recupera el balon mágicamente'
-Motivo: 'DePaul' no pertenece a ninguna alineación ni ha ingresado.
+Línea: '[TARJETA ROJA] ¡Terrible falta y es ROJA!'
+Motivo: El jugador mencionado no pertenece a ninguna alineación ni ha ingresado.
 
