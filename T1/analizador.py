@@ -15,8 +15,8 @@ frase_variable = rf"(?:{letra}|{digito}| |{signos})*?"
 # == Entidades del Juego y Tiempo == #
 jugador = rf"({letra_may}{letra}+)"
 equipo = rf"({letra_may}{letra}+)"
-minuto = rf"\[({digito}+)’\]"
-tiempo_agregado = rf"\[MINUTOS EXTRA\] \+({digito}+)’"
+minuto = rf"\[({digito}+)['’]\]"
+tiempo_agregado = rf"\[MINUTOS EXTRA\] \+({digito}+)['’]"
 
 #yo
 listaJugadores = rf"({jugador}(?:(?:, | y ){jugador})*)"
@@ -42,7 +42,7 @@ evento_valido = rf"(?:{evento_pase}|{evento_tiro}|{evento_robo}|{evento_falta}|{
 
 # == Eventos de Inicio y Cierre == #
 presentacion_equipo = rf"\[ALINEACION\] El equipo {equipo} sale a la cancha con: {listaJugadores}"
-inicio_partido = rf"\[0’\]{frase_variable}{jugador}"
+inicio_partido = rf"\[0['’]\]{frase_variable}{jugador}"
 
 # == Estructura Principal == #
 relato_partido = rf"^{presentacion_equipo}{presentacion_equipo}{inicio_partido}(?:{evento_valido}|{minuto} {frase_variable})*$"
@@ -143,7 +143,7 @@ def analizarRelato(equipoJugadores, relato):
                 
             # C. Validación: ¿El jugador origen tiene el balón?
             if jugadorPaseOrigen != jugadorConPelota:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugadorPaseOrigen}' no pertenece a ninguna alineación ni ha ingresado.\n")
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: '{jugadorPaseOrigen}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
             #Actualizamos el tiempo de posesión del equipo que tenía la pelota antes del pase
@@ -205,7 +205,7 @@ def analizarRelato(equipoJugadores, relato):
                     
             # Si revisamos a todos los de la cancha y ninguno estaba en la línea:
             if jugadorSale is None:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: No se detectó a ningún jugador en cancha para salir.\n")
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: No se detectó a ningún jugador en cancha para salir.\n")
                 continue
                 
             #Cortamos la línea justo después del jugador que sale
@@ -248,7 +248,7 @@ def analizarRelato(equipoJugadores, relato):
 
             #Si no esta en la alineacion ni ha ingresado
             if jugadorTarjeta is None:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: El jugador mencionado no pertenece a ninguna alineación ni ha ingresado.\n")
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: El jugador mencionado no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
             #Si encontramos un jugador
@@ -376,7 +376,7 @@ def validarJugadoresFantasma(jugadoresAEvaluar, equipoJugadores, linea, inconsis
     """
     for jugador in jugadoresAEvaluar:
         if obtenerEquipo(jugador, equipoJugadores) is None:
-            error = f"ERROR: Jugador Desconocido.\nLínea: '{linea}'\nMotivo: '{jugador}' no pertenece a ninguna alineación ni ha ingresado.\n"
+            error = f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: '{jugador}' no pertenece a ninguna alineación ni ha ingresado.\n"
             inconsistencias.append(error)
             return False # Encontramos un fantasma, la validación falla
             
@@ -388,7 +388,7 @@ def validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias):
     Si es así, registra el error y retorna False. Si el tiempo está bien, retorna True.
     """
     if minutoActual < ultimoMinuto:
-        error = f"ERROR: Salto Temporal.\nLínea: '{linea}'\nMotivo: El minuto {minutoActual}' es inferior al último registrado ({ultimoMinuto}').\n"
+        error = f"ERROR: Salto Temporal.\nLínea: \"{linea}\"\nMotivo: El minuto {minutoActual}' es inferior al último registrado'\n"
         inconsistencias.append(error)
         return False # Hay un salto en el tiempo, validación falla
     return True # El tiempo es correcto
@@ -460,7 +460,7 @@ def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas
 
 tiempo_inicio = time.time() #BORRAR
     
-equipoJugadores, relato = leerArchivo("relator3.txt")
+equipoJugadores, relato = leerArchivo("relator.txt")
 errores, marcador, faltas, tarjetasAmarillas, tarjetasRojas, posesion = analizarRelato(equipoJugadores, relato)
 imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas, errores, equipoJugadores)
 tiempo_fin = time.time() #Borrar

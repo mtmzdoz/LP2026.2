@@ -6,7 +6,7 @@ Version Python: 3.10.11
 
 Supuestos y consideraciones 
 1. Modificaciones EBNF. Foro "Modificacion de eBNF"
-    En el EBNF dado, el patron de <presentacion_equipo> repetía el grupo de captura jugador usando un asterisco *. El problema de esto es que en 
+    En el EBNF dado, el patron de <presentacion_equipo> repetia el grupo de captura jugador usando un asterisco *. El problema de esto es que en 
     Python, cuando se repite un grupo de captura, este va sobrescribiendo la memoria cada vez que encuentra uno nuevo. 
     Así que solo guardaba al último jugador de la lista y borraba a los demás. Por lo que agregue <listaJugadores>: que es el patron 
     original de los jugadores y lo hice grupo de captura. Actualice <presentacion_equipo> con este nuevo patron al final de este en 
@@ -15,8 +15,10 @@ Supuestos y consideraciones
     los jugadores en un grupo(ej: "Messi, DePaul y Fernández") sin que Python borre a nadie. Y al tener los jugadores separados, se puede
     ocupar el re.findall para sacar los nombres limpios de manera segura.
 
-    Además, no se ocuparon los patrones de palabra y relato_partido, palabra debido a que tenia un doble * al estar en <frase_variable> y demoraba
-    el tiempo de ejecucion, y relato partido porque law validación en el código se implementó iterando línea por línea
+    Además, no se ocuparon los patrones de <palabra> y <relato_partido>, <palabra> debido a que tenia un doble * al estar en <frase_variable> y demoraba
+    el tiempo de ejecucion, y <relato_partido> porque law validación en el código se implementó iterando línea por línea. De todas maneras las deje en el EBNF 
+    ya que eso se sugirio "Si no la consideras necesaria no es obligatorio usarla, pero te recomiendo dejarla definida igualmente por sanidad del código, para 
+    evitar problemas durante la corrección"
 
 2. Formato de nombres. Foro "Consulta Equipos". 
     Los nombres compuestos de paises o jugadores (ej: Corea del Sur) vendran escritos en formato CamelCase (ej: CoreaDelSur)
@@ -47,3 +49,6 @@ Supuestos y consideraciones
 6. Tarjetas Rojas = Expulsion Real. Foro "Conteo amarrillas por terminal"
     Bastian dijo "Solo la roja es expulsión, podría pasar el caso de que existan 3 líneas continuas de amarilla, amarilla, 
     roja, pero la doble amarilla no implica roja directa ni expulsión"
+
+7. Variación de '’ en los minutos (Apóstrofe y comilla)
+    Se consideró que en los patrones de <minuto>, <tiempo_agregado> e <inicio_partido> se modifico con (['’]) para aceptar ambos caracteres

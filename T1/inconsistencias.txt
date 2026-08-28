@@ -1,4 +1,8 @@
 ERROR: Jugador Desconocido.
-Línea: '[TARJETA ROJA] ¡Terrible falta y es ROJA!'
-Motivo: El jugador mencionado no pertenece a ninguna alineación ni ha ingresado.
+Línea: "[28’] Ramos filtra un pase magistral a Lamine"
+Motivo: 'Ramos' no pertenece a ninguna alineación ni ha ingresado.
+
+ERROR: Salto Temporal.
+Línea: "[18’] Lamine domina el balón"
+Motivo: El minuto 18' es inferior al último registrado'
 
