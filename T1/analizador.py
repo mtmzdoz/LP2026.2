@@ -1,5 +1,4 @@
 import re
-import time  #BORRAR
 
 #yo
 signos = r'[¡!,\.\'’\-\?¿"“”]'
@@ -47,35 +46,47 @@ inicio_partido = rf"\[0['’]\]{frase_variable}{jugador}"
 # == Estructura Principal == #
 relato_partido = rf"^{presentacion_equipo}{presentacion_equipo}{inicio_partido}(?:{evento_valido}|{minuto} {frase_variable})*$"
 
-
+"""
+***
+Parametro 1 : nombre_archivo (String)
+***
+Tipo de retorno: Tupla (equipoJugadores: Diccionario, relato: Lista de strings)
+***
+Lee el archivo de texto, extrae las alineaciones iniciales para guardarlas en un diccionario y almacena el resto de las líneas en una lista, retornando ambas
+"""
 def leerArchivo(nombre_archivo):
     with open(nombre_archivo, "r", encoding="utf-8") as archivo:
         contenido = archivo.read().strip()
     lineas = contenido.split("\n")
 
-    #Siempre en primera y segunda linea estarán las alineaciones
+    #Siempre en primera y segunda linea estaran las alineaciones
     alineaciones = lineas[0:2]
     equipoJugadores = {}
-    print(f"Alineaciones: {alineaciones}") #BORRAR para ver si captura la linea de alineaciones 
+    
     #resto del relato
     relato = lineas[2:]
 
     for linea in alineaciones:
         matchAlineacion = re.match(rf"^{presentacion_equipo}$", linea)
         if matchAlineacion:
-            print(f"Match alineacion: {matchAlineacion}") #BORRAR para ver si efectivamente le hizo match a la linea de alineacion
-            equipo = matchAlineacion.group(1) #primero el equipo
-            print(f"Equipo: {equipo}") #BORRAR para ver si captura el nombre del equipo
-            
-            jugadores = matchAlineacion.group(2) #se extraen todos los nombres de los jugadores (Messi, DePaul y Fernández)
+            equipo = matchAlineacion.group(1) 
+            jugadores = matchAlineacion.group(2) #Se extraen todos los nombres de los jugadores (Messi, DePaul y Fernandez)
             nombreJugadores = re.findall(rf"{jugador}", jugadores) #Extraemos los nombres de los jugadores individual
-            equipoJugadores[equipo] = nombreJugadores  # Diccionario x pais con los jugadores
-        print(f"EquipoJugadores: {equipoJugadores}") #BORRAR para ver si efectivamente se guardo en el diccionario
-    
+            equipoJugadores[equipo] = nombreJugadores  #Diccionario x pais con los jugadores
     return equipoJugadores, relato
 
+"""
+***
+Parametro 1 : equipoJugadores (Diccionario)
+Parametro 2 : relato (Lista de strings)
+***
+Tipo de retorno: Tupla (inconsistencias: Lista, marcador: Diccionario, contadorFaltas: Diccionario, tarjetasAmarillas: Lista, tarjetasRojas: Lista, 
+                tiempoPosesionPelota: Diccionario)
+***
+Analiza secuencialmente las lineas del relato para calcular el marcador, posesion, faltas, tarjetas y detectar errores, retornando todas las stats generadas
+"""
 def analizarRelato(equipoJugadores, relato):
-    equipoConPelota = None # Para calcular stat de posesión 
+    equipoConPelota = None #Para calcular stat de posesion 
     jugadorConPelota = None 
     inconsistencias = []
     tarjetasAmarillas = []
@@ -93,32 +104,28 @@ def analizarRelato(equipoJugadores, relato):
         marcador[equipo] = 0
         contadorFaltas[equipo] = 0
         tiempoPosesionPelota[equipo] = 0
-    print(f"Marcador inicial: {marcador}") #BORRAR para ver si efectivamente se guardo en el diccionario
-    print(f"Contador de faltas inicial: {contadorFaltas}") #BORRAR para ver si efectivamente se guardo en el diccionario
-    print(f"Tiempo de posesion inicial: {tiempoPosesionPelota}") #BORRAR para ver si efectivamente se guardo en el diccionario
-
+   
     for linea in relato:
+
         #Inicio Partido
         matchInicio = re.match(rf"^{inicio_partido}$", linea)
-        #print(f"Match inicio: {matchInicio}") #BORRAR para ver si efectivamente le hizo match a la linea de inicio
+    
         if matchInicio:
-            #Extraemos al jugador que hace el saque inicial
+            #Se extrae al jugador que hace el saque inicial
             jugadorSaqueInicial = matchInicio.group(1)
-            print(f"Jugador que hace el saque inicial: {jugadorSaqueInicial}") #BORRAR para ver si efectivamente captura el nombre del jugador
-            #Buscamos a qué equipo pertenece ese jugador en nuestro diccionario
+            #Se busca a que equipo pertenece ese jugador en nuestro diccionario
             equipoPerteneciente = obtenerEquipo(jugadorSaqueInicial, equipoJugadores)
-            print(f"Equipo al que pertenece el jugador: {equipoPerteneciente}") #BORRAR para ver si efectivamente captura el nombre del equipo
+
             #Jugador Fantasma
             jugadorValido = validarJugadoresFantasma([jugadorSaqueInicial], equipoJugadores, linea, inconsistencias)
             if not jugadorValido:
-                continue#Saltamos la línea si el evento es inválido
+                continue#Saltamos la linea si el evento es invalido
             
-            #Si todo bien actualizamos el estado del partido
+            #Se actualiza partido
             ultimoMinuto = 0
             jugadorConPelota = jugadorSaqueInicial
             equipoConPelota = equipoPerteneciente
-            continue #Siguiente línea del relato
-
+            continue
 
         #Pase
         matchPase = re.match(rf"^{evento_pase}$", linea)
@@ -127,101 +134,96 @@ def analizarRelato(equipoJugadores, relato):
             minActual = int(matchPase.group(1))
             jugadorPaseOrigen = matchPase.group(2)
             jugadorPaseDestino = matchPase.group(3)
-            print(f"Minuto actual: {minActual}") #BORRAR para ver si efectivamente captura el minuto
-            print(f"Jugador que pasa: {jugadorPaseOrigen}") #BORRAR para ver si efectivamente captura el nombre del jugador
-            print(f"Jugador que recibe: {jugadorPaseDestino}") #BORRAR para
-            
-            # A. Validación: Salto Temporal BORRAR
+
+            #tiempo correcto/Saltos temp
             tiempoValido = validarSaltoTemporal(minActual, ultimoMinuto, linea, inconsistencias)
             if not tiempoValido:
                 continue
 
-            # B. Validación: Jugador Desconocido
+            #Jugador Fantasma
             jugadorValido = validarJugadoresFantasma([jugadorPaseOrigen, jugadorPaseDestino], equipoJugadores, linea, inconsistencias)
             if not jugadorValido:
-                continue # Saltamos la línea si algún jugador es fantasma
+                continue 
                 
-            # C. Validación: ¿El jugador origen tiene el balón?
             if jugadorPaseOrigen != jugadorConPelota:
                 inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: '{jugadorPaseOrigen}' no pertenece a ninguna alineación ni ha ingresado.\n")
                 continue
 
-            #Actualizamos el tiempo de posesión del equipo que tenía la pelota antes del pase
+            #Actualizamos el tiempo de posesion del equipo que tenia la pelota antes del pase
             tiempoPosesion(equipoConPelota, minActual, ultimoMinuto, tiempoPosesionPelota)
 
-            # Si todo está bien, actualizamos el estado
             ultimoMinuto = minActual
             jugadorConPelota = jugadorPaseDestino
             equipoConPelota = obtenerEquipo(jugadorPaseDestino, equipoJugadores)
             continue
 
+        #Tiro
+        matchTiro = re.match(rf"^{evento_tiro}$", linea)
+        
+        if matchTiro:
+            minutoActual = int(matchTiro.group(1))
+            jugadorTiro = matchTiro.group(2)
+        
+            tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
+            if not tiempoValido:
+                continue
+                        
+            jugadorValido = validarJugadoresFantasma([jugadorTiro], equipoJugadores, linea, inconsistencias)
+            if not jugadorValido:
+                continue
+        
+            tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
+            ultimoMinuto = minutoActual
+            continue
+        
         # Robo/Recuperacion 
         matchRobo = re.match(rf"^{evento_robo}$", linea)
         
         if matchRobo:
             minutoActual = int(matchRobo.group(1))
             jugadorRobo = matchRobo.group(2)
-            print(f"Minuto actual: {minutoActual}") #BORRAR para ver si efectivamente captura el minuto
-            print(f"Jugador que roba: {jugadorRobo}") #BORRAR para ver
             
-            # A. Validación: Salto Temporal BORRAR
             tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
             if not tiempoValido:
                 continue
                 
-            # B. Validación: Jugador Desconocido BORRAR
             jugadorValido = validarJugadoresFantasma([jugadorRobo], equipoJugadores, linea, inconsistencias)
             if not jugadorValido:
                 continue
 
             tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
 
-            #Si todo está bien, actualizamos el estado BORRAR
             ultimoMinuto = minutoActual
             jugadorConPelota = jugadorRobo 
             equipoConPelota = obtenerEquipo(jugadorRobo, equipoJugadores) 
             continue
 
-        #Cambio
-        matchCambio = re.match(rf"^{evento_cambio}$", linea)
+        #Falta
+        matchFalta = re.match(rf"^{evento_falta}$", linea)
         
-        if matchCambio:
-            jugadorSale = None
-            equipoCambio = None
-            print(f"Match cambio: {matchCambio}") #BORRAR para ver si efectivamente le hizo match a la linea de cambio  
-            
-            #Vemos jugadores en cancha para buscar el que sale
-            for equipo in equipoJugadores:
-                print(f"Jugadores en cancha del equipo {equipo}: {equipoJugadores[equipo]}") #BORRAR para ver si efectivamente captura los jugadores en cancha
-                for jugadorEnCancha in equipoJugadores[equipo]:
-                    if jugadorEnCancha in linea: #Vemos si el nombre del jugador está escrito en la línea
-                        jugadorSale = jugadorEnCancha
-                        equipoCambio = equipo
-                        print(f"Equipo que hace cambio de jugador: {equipoCambio}") #BORRAR para ver si efectivamente captura el nombre del equipo
-                        print(f"Jugador que sale: {jugadorSale}") #BORRAR para ver si
-                        break
-                if jugadorSale:
-                    break # Si lo encontramos dejamos de buscar
-                    
-            # Si revisamos a todos los de la cancha y ninguno estaba en la línea:
-            if jugadorSale is None:
-                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: No se detectó a ningún jugador en cancha para salir.\n")
+        if matchFalta:
+            minutoActual = int(matchFalta.group(1))
+            jugadorInfractor = matchFalta.group(2)
+            jugadorVictima = matchFalta.group(3)
+        
+            tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
+            if not tiempoValido:
                 continue
-                
-            #Cortamos la línea justo después del jugador que sale
-            lineaJugadorAEntrar = linea.split(jugadorSale)[1]
-            print(f"Línea después del jugador que sale: {lineaJugadorAEntrar}") #BORRAR para ver si efectivamente corta la línea
-            
-            # 3. El que ENTRA es la primera palabra con mayúscula en esa parte final
-            jugadorEntra = re.search(rf"{jugador}", lineaJugadorAEntrar)
-            print(f"Jugador que entra: {jugadorEntra}") #BORRAR para ver si efectivamente captura el nombre del jugador que entra
-            
-            if jugadorEntra:
-                jugadorEntra = jugadorEntra.group(1)
-                print(f"Jugador que entra (después de group): {jugadorEntra}") #BORRAR para ver si efectivamente captura el nombre del jugador que entra
-                #Se hce el cambio en el diccionario
-                equipoJugadores[equipoCambio].remove(jugadorSale)
-                equipoJugadores[equipoCambio].append(jugadorEntra)
+                    
+            equipoInfractor = obtenerEquipo(jugadorInfractor, equipoJugadores)
+        
+            jugadorValido = validarJugadoresFantasma([jugadorInfractor, jugadorVictima], equipoJugadores, linea, inconsistencias)
+            if not jugadorValido:
+                continue
+                    
+            #Si todo esta bien se suma la falta 
+            contadorFaltas[equipoInfractor] += 1
+            tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
+            ultimoMinuto = minutoActual
+            equipoConPelota = obtenerEquipo(jugadorVictima, equipoJugadores)
+        
+            #El jugador que le hicieron la falta se queda con la pelota
+            jugadorConPelota = jugadorVictima
             continue
 
         #Tarjeta
@@ -230,18 +232,14 @@ def analizarRelato(equipoJugadores, relato):
         if matchTarjeta:
             jugadorTarjeta = None
             equipoDelAmonestado = None 
-            # 1. Buscamos TODAS las palabras que parezcan nombres en esta línea BORRAR
+
             jugadorAAmonestar = re.findall(rf"{jugador}", linea)
-            print(f"Jugador en línea de tarjeta: {jugadorAAmonestar}") #BORRAR para ver si efectivamente captura los posibles jugadores
             
-            # 2. Revisamos cuál de esas palabras existe en nuestras listas Borrar
             for palabra in jugadorAAmonestar:
-                print(f"Jugador en línea de tarjeta: {palabra}") #BORRAR para ver si efectivamente captura los posibles jugadores
                 equipoPerteneciente = obtenerEquipo(palabra, equipoJugadores)
-                print(f"Equipo al que pertenece el jugador: {equipoPerteneciente}") #BORRAR para ver si efectivamente captura el equipo del posible jugador
                 if equipoPerteneciente is not None:
                         jugadorTarjeta = palabra
-                        equipoDelAmonestado = equipoPerteneciente # Guardamos el equipo
+                        equipoDelAmonestado = equipoPerteneciente #Se guarda el equipo
                         break
                 if equipoPerteneciente:
                     break
@@ -259,89 +257,66 @@ def analizarRelato(equipoJugadores, relato):
                 equipoJugadores[equipoDelAmonestado].remove(jugadorTarjeta) #expulsado
                 continue
 
-        #Tiro
-        matchTiro = re.match(rf"^{evento_tiro}$", linea)
-
-        if matchTiro:
-            minutoActual = int(matchTiro.group(1))
-            jugadorTiro = matchTiro.group(2)
-
-            # A. Validación: Salto Temporal BORRAR
-            tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
-            if not tiempoValido:
-                continue
+        #Cambio
+        matchCambio = re.match(rf"^{evento_cambio}$", linea)
                 
-            # B. Validación: Jugador Fantasma BORRAR
-            jugadorValido = validarJugadoresFantasma([jugadorTiro], equipoJugadores, linea, inconsistencias)
-            if not jugadorValido:
+        if matchCambio:
+            jugadorSale = None
+            equipoCambio = None
+                    
+            #Vemos jugadores en cancha para buscar el que sale
+            for equipo in equipoJugadores:
+                for jugadorEnCancha in equipoJugadores[equipo]:
+                    if jugadorEnCancha in linea: 
+                        jugadorSale = jugadorEnCancha
+                        equipoCambio = equipo
+                        break
+                if jugadorSale:
+                    break #Si lo encontramos dejamos de buscar
+                            
+            #Si revisamos a todos los de la cancha y ninguno estaba en la linea
+            if jugadorSale is None:
+                inconsistencias.append(f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: No se detectó a ningún jugador en cancha para salir.\n")
                 continue
-
-            tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
-            ultimoMinuto = minutoActual
-            continue
-
-        #Falta
-        matchFalta = re.match(rf"^{evento_falta}$", linea)
-
-        if matchFalta:
-            minutoActual = int(matchFalta.group(1))
-            jugadorInfractor = matchFalta.group(2)
-            jugadorVictima = matchFalta.group(3)
-
-            # A. Validación: Salto Temporal BORRAR
-            tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
-            if not tiempoValido:
-                continue
-            
-            # B. Validación: Jugador Fantasma BORRAR
-            equipoInfractor = obtenerEquipo(jugadorInfractor, equipoJugadores)
-
-            jugadorValido = validarJugadoresFantasma([jugadorInfractor, jugadorVictima], equipoJugadores, linea, inconsistencias)
-            if not jugadorValido:
-                continue
-            
-            # Si todo está bien, SUMAMOS LA FALTA BORRAR
-            contadorFaltas[equipoInfractor] += 1
-            tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
-            ultimoMinuto = minutoActual
-            equipoConPelota = obtenerEquipo(jugadorVictima, equipoJugadores)
-
-            #El jugador que le hicieron la falta se queda con la pelota
-            jugadorConPelota = jugadorVictima
+                        
+            #Cortamos la linea justo después del jugador que sale
+            lineaJugadorAEntrar = linea.split(jugadorSale)[1]
+                    
+            #El jugador que entra es la primera palabra con mayúscula 
+            jugadorEntra = re.search(rf"{jugador}", lineaJugadorAEntrar)
+                    
+            if jugadorEntra:
+                jugadorEntra = jugadorEntra.group(1)
+                #Se hce el cambio en el diccionario
+                equipoJugadores[equipoCambio].remove(jugadorSale)
+                equipoJugadores[equipoCambio].append(jugadorEntra)
             continue
             
         #Gol
         matchGol = re.match(rf"^{evento_gol}$", linea)
-        print(f"Match gol: {matchGol}") #BORRAR para ver si efectivamente le hizo match a la linea de gol BOrrar
         if matchGol:
             minutoActual = int(matchGol.group(1))
             jugadorGol = matchGol.group(2)
             equipoGol = matchGol.group(3)
-            print(f"Minuto actual: {minutoActual}") #BORRAR para ver si efectivamente captura el minuto
-            print(f"Jugador que hace el gol: {jugadorGol}") #BORRAR para ver si efectivamente captura el nombre del jugador
-            print(f"Equipo que hace el gol: {equipoGol}") #BORRAR para
             
-            # A. Validación: Salto Temporal BORRAR
             tiempoValido = validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias)
             if not tiempoValido:
                 continue
                 
-            # B. Validación: Jugador Fantasma BORRAR
             jugadorValido = validarJugadoresFantasma([jugadorGol], equipoJugadores, linea, inconsistencias)
             if not jugadorValido:
                 continue
             
-            # Si todo está bien, SUMAMOS EL GOL BORRAR
             if equipoGol in marcador:
                 marcador[equipoGol] += 1
                 
             tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota)
             ultimoMinuto = minutoActual
 
-            #Cuando se hace gol: El equipo que recibio el gol saca
+            #Cuando se hace gol el equipo que recibio el gol saca
             for equipo in equipoJugadores:
                 if equipo != equipoGol:
-                    # Le damos la pelota al primer jugador del otro equipo
+                    #Se pasa la pelota al primer jugador del otro equipo
                     jugadorConPelota = equipoJugadores[equipo][0]
                     equipoConPelota = equipo
                     break
@@ -349,59 +324,102 @@ def analizarRelato(equipoJugadores, relato):
 
         #Minutos Extra 
         matchExtra = re.match(rf"^{tiempo_agregado}$", linea)
+
         if matchExtra:
             minutosExtra = int(matchExtra.group(1))
-            print(f"Minutos extra detectados: {minutosExtra}") #BORRAR para ver si efectivamente captura los minutos extra
             continue
 
     minutosFinal = 90 + minutosExtra
     
-    # Le sumamos los últimos minutos del partido al jugador que se quedó con el balón
+    #Se suma los ultimos minutos del partido al jugador que se quedo con la pelota
     if minutosFinal > ultimoMinuto:
         tiempoPosesion(equipoConPelota, minutosFinal, ultimoMinuto, tiempoPosesionPelota)
 
     return inconsistencias, marcador, contadorFaltas, tarjetasAmarillas, tarjetasRojas, tiempoPosesionPelota
 
+"""
+***
+Parametro 1 : nombreJugador (String)
+Parametro 2 : equipoJugadores (Diccionario)
+***
+Tipo de retorno: String o None (El nombre del equipo, o none si no se encuentra)
+***
+Busca a un jugador en el diccionario de alineaciones y retorna el nombre de su equipo. Si el jugador no existe en cancha, retorna none
+"""
 def obtenerEquipo(nombreJugador, equipoJugadores):
-    """Busca a un jugador en el diccionario y retorna el nombre de su equipo. Si no existe, retorna None."""
     for equipo in equipoJugadores:
         if nombreJugador in equipoJugadores[equipo]:
             return equipo
-    return None
+    return None #Si no se encuentra el jugador en ninguna alineación
 
+"""
+***
+Parametro 1 : jugadoresAEvaluar (Lista de strings)
+Parametro 2 : equipoJugadores (Diccionario)
+Parametro 3 : linea (String)
+Parametro 4 : inconsistencias (Lista de strings)
+***
+Tipo de retorno: Booleano (true si todos existen, false si hay algún jugador desconocido)
+***
+Verifica si los jugadores se encuentran en cancha. Si alguno no existe, registra el error en la lista de inconsistencias y retorna false
+"""
 def validarJugadoresFantasma(jugadoresAEvaluar, equipoJugadores, linea, inconsistencias):
-    """
-    Revisa una lista de jugadores. Si alguno no está en cancha, 
-    registra el error y retorna False. Si todos existen, retorna True.
-    """
     for jugador in jugadoresAEvaluar:
         if obtenerEquipo(jugador, equipoJugadores) is None:
             error = f"ERROR: Jugador Desconocido.\nLínea: \"{linea}\"\nMotivo: '{jugador}' no pertenece a ninguna alineación ni ha ingresado.\n"
             inconsistencias.append(error)
-            return False # Encontramos un fantasma, la validación falla
-            
-    return True # Todos los jugadores son reales
+            return False
+    return True #Todos los jugadores son validos
 
+"""
+***
+Parametro 1 : minutoActual (Entero)
+Parametro 2 : ultimoMinuto (Entero)
+Parametro 3 : linea (String)
+Parametro 4 : inconsistencias (Lista de strings)
+***
+Tipo de retorno: Booleano (true si el tiempo avanza correctamente, false si hay un salto temporal)
+***
+Comprueba que el minuto del evento actual no sea menor al del ultimo evento registrado. Si hay un retroceso en el tiempo, guarda el error y retorna false
+"""
 def validarSaltoTemporal(minutoActual, ultimoMinuto, linea, inconsistencias):
-    """
-    Verifica si el minuto actual es menor al último minuto registrado.
-    Si es así, registra el error y retorna False. Si el tiempo está bien, retorna True.
-    """
     if minutoActual < ultimoMinuto:
         error = f"ERROR: Salto Temporal.\nLínea: \"{linea}\"\nMotivo: El minuto {minutoActual}' es inferior al último registrado'\n"
         inconsistencias.append(error)
-        return False # Hay un salto en el tiempo, validación falla
-    return True # El tiempo es correcto
+        return False 
+    return True #El tiempo es correcto
 
+"""
+***
+Parametro 1 : equipoConPelota (String)
+Parametro 2 : minutoActual (Entero)
+Parametro 3 : ultimoMinuto (Entero)
+Parametro 4 : tiempoPosesionPelota (Diccionario)
+***
+Tipo de retorno: None
+***
+Calcula la diferencia de minutos transcurridos y se los suma al acumulador de tiempo total de posesion del equipo que actualmente tiene la pelota
+"""
 def tiempoPosesion(equipoConPelota, minutoActual, ultimoMinuto, tiempoPosesionPelota):
-    """Suma los minutos transcurridos al equipo que tiene la pelota."""
     if equipoConPelota is not None:
         minutosPasados = minutoActual - ultimoMinuto
         tiempoPosesionPelota[equipoConPelota] += minutosPasados
 
+"""
+***
+Parametro 1 : marcador (Diccionario)
+Parametro 2 : posesion (Diccionario)
+Parametro 3 : faltas (Diccionario)
+Parametro 4 : tarjetasAmarillas (Lista de tuplas)
+Parametro 5 : tarjetasRojas (Lista de tuplas)
+Parametro 6 : errores (Lista de strings)
+Parametro 7 : equipoJugadores (Diccionario)
+***
+Tipo de retorno: None
+***
+Imprime por consola el reporte final del partido con las estadisticas de posesion, el detalle de tarjetas y la cantidad de errores de transmision detectados
+"""
 def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas, errores, equipoJugadores):
-    # --- 1. IMPRIMIR MARCADOR FINAL (Lógica básica) ---
-    # Llenamos una lista con los nombres de los equipos usando un for normal
     equipos = []
     for equipo in marcador:
         equipos.append(equipo)
@@ -413,7 +431,6 @@ def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas
     print(f"MARCADOR FINAL: {equipo1} {marcador[equipo1]} - {marcador[equipo2]} {equipo2}")
         
     print("ESTADISTICAS DE POSESION:")
-    # Sumamos el tiempo manualmente
     tiempoTotalPartido = 0
     for equipo in posesion:
         tiempoTotalPartido += posesion[equipo]
@@ -434,9 +451,8 @@ def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas
         cantidadFaltas = faltas[equipo]
         print(f"* {equipo}: {cantidadFaltas}")
     
-         
     print("- Tarjetas:")
-    # Verificamos manualmente si las listas están vacías
+    #Si las listas estan vacias
     if len(tarjetasAmarillas) == 0 and len(tarjetasRojas) == 0:
         print("* Ninguna tarjeta registrada.")
     else:
@@ -445,27 +461,20 @@ def imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas
                 
         for jugadorNombre, equipoJugador in tarjetasRojas:
                 print(f"* {jugadorNombre} ({equipoJugador}): 1 Roja")
-    
-                
+        
     print(f"\nERRORES DE TRANSMISION DETECTADOS: {len(errores)}")
     
-    
+    """
     print("\nJUGADORES QUE TERMINARON EN LA CANCHA:")
     for equipo in equipoJugadores:
-        # Unimos la lista de jugadores separándolos por comas
         jugadoresActuales = ", ".join(equipoJugadores[equipo])
         print(f"* {equipo}: {jugadoresActuales}")
-    
-
-
-tiempo_inicio = time.time() #BORRAR
+    """
     
 equipoJugadores, relato = leerArchivo("relator.txt")
 errores, marcador, faltas, tarjetasAmarillas, tarjetasRojas, posesion = analizarRelato(equipoJugadores, relato)
 imprimirReporte(marcador, posesion, faltas, tarjetasAmarillas, tarjetasRojas, errores, equipoJugadores)
-tiempo_fin = time.time() #Borrar
-print(f"Tiempo de ejecución: {tiempo_fin - tiempo_inicio:.4f} segundos") #Borrar
-    
+ 
 # Errores en el txt
 archivoSalida = "inconsistencias.txt"
 with open(archivoSalida, "w", encoding="utf-8") as salida:

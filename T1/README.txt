@@ -3,7 +3,6 @@ Rol: 202473652-3
 Rut: 21.715.078-7
 Version Python: 3.10.11
 
-
 Supuestos y consideraciones 
 1. Modificaciones EBNF. Foro "Modificacion de eBNF"
     En el EBNF dado, el patron de <presentacion_equipo> repetia el grupo de captura jugador usando un asterisco *. El problema de esto es que en 
@@ -29,15 +28,19 @@ Supuestos y consideraciones
     En la linea de [CAMBIO], no habra palabras con mayuscula inicial entre el nombre del jugador que SALE y el nombre del jugador que
     ENTRA (ej: el relator diria "y entra Arias", no "y Entra Arias"). Bastian confirmo que "se evitaran mayuscula para evitar ambiguedades", 
     ya que el jugador que entra aún no esta registrado. Así que esto nos permite usar re.search para capturar con seguridad la primera mayusucla 
-    despues del jugador que sale
+    despues del jugador que sale.
+
+    Además, sobre la captura del jugador que entra en el cambio, se decidio hacerlo de manera de que, cuando se identifique al jugador que sale, se
+    divida la linea utilizando el nombre del jugador que sale como pivote, luego sobre el texto restante se aplica re.search() para que la primera 
+    palabra mayuscula que detecte sea el jugador que entre. Esto para que cualquier "ruido" que haya en esta linea evite ser capturado
 
 4. Tarjetas a "Jugadores Fantasma". Foro "Duda evento_tarjeta y jugadores fantasma"
     Para resolver la ambigüedad de palabras en mayúscula en los eventos de tarjeta (como "AMARILLA" o "Terrible"), el programa primero verifica las 
-    mayúsculas contra los jugadores en cancha. En el caso de que ningun jugador coincida se supuso que lo que importa es identificar el error. Si en 
+    mayusculas contra los jugadores en cancha. En el caso de que ningun jugador coincida se supuso que lo que importa es identificar el error. Si en 
     una linea de [TARJETA] no se detecta a ningun jugador valido en cancha (que este en la alineacion o entre como cambio), se registre el error con
     un mensaje generico ("El jugador mencionado no pertenece a ninguna alineación ni ha ingresado") en lugar de intentar adivinar su nombre/apellido. 
     Como <frase_variable> permite que el relator diga palabras como "Area", "Falta" o "Tremenda" con mayusculas, el mensaje generico evita que se "acuse" 
-    a una palabra de ser un jugador fantasma. Bastian dijo "Se reporta error de jugador desconocido y sea lo que sea que se encuentre, al final lo que importa }
+    a una palabra de ser un jugador fantasma. Bastian dijo "Se reporta error de jugador desconocido y sea lo que sea que se encuentre, al final lo que importa
     es el error, si se hace una línea de tarjeta y no hay jugador al cual darle la tarjeta, corresponde a un error"
     
 5. Reglas de Posesión (faltas y goles). Foro "error con contabilizacion de tiempo"
@@ -51,4 +54,17 @@ Supuestos y consideraciones
     roja, pero la doble amarilla no implica roja directa ni expulsión"
 
 7. Variación de '’ en los minutos (Apóstrofe y comilla)
-    Se consideró que en los patrones de <minuto>, <tiempo_agregado> e <inicio_partido> se modifico con (['’]) para aceptar ambos caracteres
+    Se consideró y modifico los patrones de <minuto>, <tiempo_agregado> e <inicio_partido> con (['’]) para aceptar ambos caracteres
+
+8. PDF 2.1 entrada
+    En el pdf de la tarea se especifica que "absolutamente toda línea válida comenzará siempre con un corchete de apertura [, ya sea 
+    conteniendo una etiqueta de metadatos (ej:[ALINEACION], [CAMBIO], [TARJETA ROJA]) o el minuto exacto de la narración (ej: [15’])".
+    Por lo que se asumio que solo sucedera una cosa a la vez, es decir, que en cada linea sucedera solo una etiqueta, no ambas como 
+    [10'] [CAMBIO]
+
+9. En caso de que se quieran ver los jugadores que quedaron en cancha, por los sucesos de cambio o tarjeta hay un print comentado.
+
+10. Foro "Caracteres concatenados"
+    En la duda se menciona que los signos de puntuacion pueden aparecer en grupos. Por lo que se decidio crear un patron <signos>. 
+    Y esta incorporado en el patrón de <frase_variable> para permitir que el programa absorba todo el "ruido", asi garantizando que no 
+    se interrumpa la captura de los datos esenciales (nombres, minutos, etc)
