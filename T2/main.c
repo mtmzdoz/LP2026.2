@@ -86,6 +86,12 @@ int main() {
                 printf("[INFO] Pixel (%d,%d) -> R: %d | G: %d | B: %d\n", x, y, p->r, p->g, p->b);
             }
         }
+        else if (strcmp(comando, "SAVE") == 0) {
+            if (lienzo_actual != NULL) {
+                exportar_ppm(lienzo_actual, contador_imagenes);
+                contador_imagenes++; // Aumenta para que el proximo sea 002, 003...
+            }
+        }
         else if (strcmp(comando, "EXIT") == 0) {
             // Libera absolutamente toda la memoria asignada y termina la ejecución
             printf("[PhotoChop] Memoria liberada. Saliendo...\n");
