@@ -1,0 +1,35 @@
+GRIS
+RED 0 0 255
+NEW -5 4
+NEW 0 0
+NEW 3 3
+RED -1 2 255
+RED 10 10 255
+GREEN 1 1 500
+INFO 10 10
+RESIZE -4 4
+RESIZE 5 5
+SAVE
+EXIT
+
+
+-- Salida Esperada
+Terminal
+Error: Dimensiones invalidas para NEW.
+Error: Dimensiones invalidas para NEW.
+[PhotoChop] Lienzo 3x3 creado.
+[PhotoChop] Canal verde actualizado en (1,1).
+Error: Dimensiones invalidas para RESIZE.
+[PhotoChop] Lienzo redimensionado a 5x5.
+[PhotoChop] Imagen guardada en /img/img_001.ppm.
+[PhotoChop] Memoria liberada. Saliendo...
+
+img_001.ppm
+P3
+5 5
+255
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 244 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

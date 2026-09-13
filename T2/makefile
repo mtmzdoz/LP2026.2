@@ -24,6 +24,8 @@ filtros.o: filtros.c filtros.h lienzo.h
 # Limpia los archivos compilados
 clean:
 	rm -f $(OBJS) $(TARGET)
+	rm -f img/*.ppm 
+# rm -f img/*.ppm elimina los .ppm generados en la carpeta img
 
 # Recompilar desde cero
 rebuild: clean all

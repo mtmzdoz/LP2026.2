@@ -11,3 +11,7 @@ void filtro_invertir(struct Lienzo *l);
 void filtro_expos(struct Lienzo *l);
 void filtro_espejo(struct Lienzo *l);
 void filtro_rotar(struct Lienzo *l);
+
+//Yo Funciones de apoyo para saltar la limitación de parámetros en la firma
+void porcentajeExposicion(int p);
+void dirRotacion(int der);

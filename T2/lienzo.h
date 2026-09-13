@@ -1,6 +1,7 @@
 #ifndef LIENZO_H
 #define LIENZO_H
 
+
 typedef struct {
     unsigned char r; // Canal Rojo (0-255)
     unsigned char g; // Canal Verde (0-255)
