@@ -8,9 +8,9 @@ Parametro 1: None
 ***
 Retorno: int (0 si todo bien, 1 si hubo error)
 ***
-Inicia el ciclo del programa, procesa el archivo de entrada (comandos.txt) y libera la memoria al finalizar
+Inicia el ciclo del programa, procesa el archivo de entrada y libera la memoria al finalizar
 */
-int main() {
+int main(){
     MotorFiltros motor;
     motor.aplicar[0] = filtro_gris;
     motor.aplicar[1] = filtro_invertir; 
@@ -37,10 +37,10 @@ int main() {
         if (sscanf(linea, "%s", comando) != 1){//Extrae el primer string para identificar el comando
             continue; //linea vacia
         }
-        //printf("[PhotoChop] Comando: %s\n", comando); // BORRAR Muestra el comando actual
 
         if (strcmp(comando, "NEW") == 0){ //Pág48
-            int ancho, alto;
+            int ancho;
+            int alto;
             sscanf(linea, "%*s %d %d", &ancho, &alto);
             
             if (ancho > 0 && alto > 0){
@@ -56,12 +56,13 @@ int main() {
             }
 
         }else if (strcmp(comando, "RED") == 0 || strcmp(comando, "GREEN") == 0 || strcmp(comando, "BLUE") == 0){
-            int x, y, valorColor;
+            int x;
+            int y;
+            int valorColor;
             sscanf(linea, "%*s %d %d %d", &x, &y, &valorColor);
-            //printf("[PhotoChop] Modificando pixel (%d,%d) con valor %d para canal %s.\n", x, y, valorColor, comando); //BORRAR
             
             if (lienzoActual != NULL && x >= 0 && x < lienzoActual->w && y >= 0 && y < lienzoActual->h){
-                if (strcmp(comando, "RED") == 0) {
+                if (strcmp(comando, "RED") == 0){
                     lienzoActual->matriz[y][x]->r = (unsigned char)valorColor;
                     printf("[PhotoChop] Canal rojo actualizado en (%d,%d).\n", x, y);
                 }else if (strcmp(comando, "GREEN") == 0){
@@ -72,7 +73,7 @@ int main() {
                     printf("[PhotoChop] Canal azul actualizado en (%d,%d).\n", x, y);
                 }
             }
-        // --- INICIO DE BLOQUE DE FILTROS ---
+        //filtros
         }else if (strcmp(comando, "GRIS") == 0){
             if (lienzoActual != NULL){
                 motor.aplicar[0](lienzoActual); 
@@ -115,9 +116,10 @@ int main() {
                 motor.aplicar[4](lienzoActual);
                 printf("[PhotoChop] Filtro ROTAR aplicado hacia %s.\n", (strcmp(direccion, "DER") == 0) ? "la derecha" : "la izquierda"); //(pregunta/condición) ? si es verdad : si es falso;
             }
-        // --- FIN DE BLOQUE DE FILTROS ---
+        //fin filtros
         }else if (strcmp(comando, "INFO") == 0){
-            int x, y;
+            int x;
+            int y;
             sscanf(linea, "%*s %d %d", &x, &y);
             
             if (lienzoActual != NULL && x >= 0 && x < lienzoActual->w && y >= 0 && y < lienzoActual->h){
@@ -126,7 +128,8 @@ int main() {
             }
 
         }else if (strcmp(comando, "RESIZE") == 0){
-            int nuevoAncho, nuevoAlto;
+            int nuevoAncho;
+            int nuevoAlto;
             sscanf(linea, "%*s %d %d", &nuevoAncho, &nuevoAlto);
             
             if (nuevoAncho > 0 && nuevoAlto > 0){ 

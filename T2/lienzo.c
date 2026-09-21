@@ -49,7 +49,7 @@ struct Lienzo* lienzo_redimensionar(struct Lienzo *l, int n_ancho, int n_alto){
     Pixel ***nuevaMatriz = (Pixel***)malloc(n_alto * sizeof(Pixel**));
     for (int y = 0; y < n_alto; y++){
         nuevaMatriz[y] = (Pixel**)malloc(n_ancho * sizeof(Pixel*));
-        for (int x = 0; x < n_ancho; x++) {
+        for (int x = 0; x < n_ancho; x++){
             nuevaMatriz[y][x] = (Pixel*)malloc(sizeof(Pixel));
             
             //Si el pixel estaba en el lienzo antiguo se copia 

@@ -131,7 +131,7 @@ Parametro 1: struct Lienzo* (puntero al lienzo)
 ***
 Retorno: None
 ***
-Rota 90 grados, invierte dimensiones, aloja nuevo lienzo y libera el antiguo
+Rota 90 grados, invierte dimensiones, guarda nuevo lienzo y libera el antiguo
 */
 void filtro_rotar(struct Lienzo *l){
     if (!l || !l->matriz){
@@ -147,7 +147,8 @@ void filtro_rotar(struct Lienzo *l){
         for (int x = 0; x < nuevoAncho; x++){
             nuevaMatriz[y][x] = (Pixel*)malloc(sizeof(Pixel));
 
-            int xAntiguo, yAntiguo;
+            int xAntiguo;
+            int yAntiguo;
             if (rotacionDerecha){ // si es 1 en el main es derecha
                 yAntiguo = l->h - 1 - x;
                 xAntiguo = y;
