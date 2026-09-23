@@ -15,6 +15,8 @@ struct Lienzo* lienzo_crear(int ancho, int alto){
     struct Lienzo *lienzo = (struct Lienzo*)malloc(sizeof(struct Lienzo));
     lienzo->w = ancho;
     lienzo->h = alto;
+    lienzo->exposicion = 100; // Valor por defecto
+    lienzo->rotacion = 1;
 
     lienzo->matriz = (Pixel***)malloc(alto * sizeof(Pixel**));//Memoria filas
     for (int y = 0; y < alto; y++){

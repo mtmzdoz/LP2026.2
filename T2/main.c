@@ -91,7 +91,7 @@ int main(){
             sscanf(linea, "%*s %d", &porcentaje);
             
             if (lienzoActual != NULL){
-                porcentajeExposicion(porcentaje);
+                lienzoActual->exposicion = porcentaje;
                 motor.aplicar[2](lienzoActual);
                 printf("[PhotoChop] Exposicion ajustada (%d %%).\n", porcentaje);
             }
@@ -109,9 +109,9 @@ int main(){
             if (lienzoActual != NULL){
                 //1 si es der o 0 si es izq a la variable de la funcion aux
                 if (strcmp(direccion, "DER") == 0){
-                    dirRotacion(1); 
+                    lienzoActual->rotacion = 1;
                 }else{
-                    dirRotacion(0); 
+                    lienzoActual->rotacion = 0;
                 }
                 motor.aplicar[4](lienzoActual);
                 printf("[PhotoChop] Filtro ROTAR aplicado hacia %s.\n", (strcmp(direccion, "DER") == 0) ? "la derecha" : "la izquierda"); //(pregunta/condición) ? si es verdad : si es falso;

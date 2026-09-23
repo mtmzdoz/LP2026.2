@@ -11,6 +11,9 @@ typedef struct {
 typedef struct Lienzo {
     int w, h;
     Pixel ***matriz; /* matriz[y][x] apunta a un Pixel* en el heap */
+    //yo
+    int exposicion;
+    int rotacion;
 } Lienzo;
 
 /* Es completamente imperativo que la matriz sea un triple puntero */
